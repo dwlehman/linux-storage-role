@@ -1,5 +1,48 @@
 #!/usr/bin/python
 
+ANSIBLE_METADATA = {
+    'metadata_version': '1.1',
+    'status': ['preview'],
+    'supported_by': 'community'
+}
+
+DOCUMENTATION = '''
+---
+module: resolve_device
+short_description: Resolve block device specification to device node path.
+version_added: "2.5"
+description:
+    - "This module accepts various forms of block device identifiers and
+       resolves them to the correct block device node path."
+options:
+    spec:
+        description:
+            - String describing a block device
+        required: true
+author:
+    - David Lehman (dlehman@redhat.com)
+'''
+
+EXAMPLES = '''
+- name: Resolve device by label
+  resolve_device:
+    spec: LABEL=MyData
+
+- name: Resolve device by name
+  resolve_device:
+    spec: mpathb
+
+- name: Resolve device by /dev/disk/by-id symlink name
+  resolve_device:
+    spec: wwn-0x5000c5005bc37f3f
+'''
+
+RETURN = '''
+device:
+    description: Path to block device node
+    type: str
+'''
+
 import glob
 import os
 
