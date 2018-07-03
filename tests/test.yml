@@ -1,5 +1,7 @@
----
-- hosts: localhost
-  remote_user: root
-  roles:
-    - template
+- name: test
+  hosts: all
+  tasks:
+
+  - name: dump bsize output
+    debug:
+      msg: GENERIC OUTPUT
