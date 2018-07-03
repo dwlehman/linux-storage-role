@@ -1,5 +1,31 @@
 ---
 - hosts: localhost
   remote_user: root
+  become: true
+
   roles:
-    - template
+    - {role: ../linux-storage-role, disks: ["vdc"], device_name: "data", lvm_vg: "foo", fs_type: "ext4", mount_point: "/opt/foo"}
+    - {role: ../linux-storage-role, disks: ["vdb"], device_type: "disk", mount_point: "/opt/bar"}
+#    - role: ../linux-storage-role
+#      vars:
+#          disks: ["vdc"]
+#          device_name: "test1"
+#          size: "50 GiB"
+#          lvm_vg: "foo_app"
+#          fs_type: "ext4"
+#          mount_point: "/opt/app/data"
+
+#    - role: ../linux-storage-role
+#      vars:
+#          device_type: "disk"
+#          disks: ["vdb"]
+#          mount_point: "/data/foo"
+
+#  tasks:
+#    - include_role:
+#      role: ../linux-storage-role
+#      vars:
+#        device_type: "disk"
+#        disks: ["vdb"]
+#        mount_point: "/data/foo"
+
