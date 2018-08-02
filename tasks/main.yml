@@ -4,8 +4,6 @@
 #
 # TODO: Set defaults as needed: lvm_vg, device_name, disks
 
-- include_tasks: "install-default.yml"
-
 #
 # Resolve specified disks to device node paths.
 #
