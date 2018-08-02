@@ -2,15 +2,8 @@
 
 # See: https://github.com/ansible/ansible/issues/30518
 
-- name: Check if lvm rpm package is installed
-  command: rpm -q lvm2
-  changed_when: no
-  args:
-    warn: no
-  register: rpm_lvm_check
-
 - name: Install LVM2 commands for RedHat OS
   package:
     pkg: lvm2
     state: present
-  when: rpm_lvm_check.rc == 1
+  when: device_type == 'lvm' or device_type == ''

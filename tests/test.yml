@@ -7,8 +7,6 @@
 #    - { role: ../linux-storage-role, "disks": ["vdb"], mount_point: '/opt/test2', device_name: 'test2', lvm_vg: 'foo'}
 #    - { role: ../linux-storage-role, "disks": ["vdc"], mount_point: '/opt/test3', device_type: 'disk'}
   tasks:
-    - include: "../tasks/install-default.yml"
-
     - include_role:
         name: ../linux-storage-role
       vars:

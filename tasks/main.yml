@@ -7,6 +7,9 @@
 #
 # Resolve specified disks to device node paths.
 #
+
+- include_tasks: "install-default.yml"
+
 - name: Resolve disks
   resolve_blockdev:
     spec: "{{ item }}"
