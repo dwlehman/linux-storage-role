@@ -52,6 +52,12 @@
 #
 # Configure the VG
 #
+- name: Install LVM2 commmands as needed
+  package:
+    name: lvm2
+    state: latest
+  when: device_type != "disk"
+
 - name: Make sure VG exists if needed
   block:
     - lvg:
