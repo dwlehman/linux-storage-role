@@ -5,7 +5,7 @@
 - name: Install parted command as needed
   package:
     name: parted
-    state: latest
+    state: present
   when: use_partitions and device_type != 'disk'
 
 - name: Create disklabels as needed

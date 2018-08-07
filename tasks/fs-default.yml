@@ -5,19 +5,19 @@
 - name: Install xfsprogs for xfs file system type
   package:
     name: xfsprogs
-    state: latest
-  when: fs_type == "xfs" or fs_type == ""
+    state: present
+  when: fs_type == "xfs"
 
 - name: Install e2fsprogs for ext file system type
   package:
     name: e2fsprogs
-    state: latest
+    state: present
   when: fs_type == "ext2" or fs_type == "ext3" or fs_type == "ext4"
 
 - name: Install util-linux as needed
   package:
     name: util-linux
-    state: latest
+    state: present
   when: fs_type == "swap" or state == "absent"
 
 - name: Remove file system as needed
