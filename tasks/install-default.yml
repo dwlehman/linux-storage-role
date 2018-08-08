@@ -1,0 +1,9 @@
+---
+
+# See: https://github.com/ansible/ansible/issues/30518
+
+- name: Install LVM2 commands for RedHat OS
+  package:
+    pkg: lvm2
+    state: present
+  when: device_type == 'lvm' or device_type == ''
