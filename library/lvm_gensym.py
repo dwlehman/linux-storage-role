@@ -4,6 +4,8 @@
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils import facts
 
+import subprocess
+
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
     'status': ['preview'],
@@ -15,24 +17,24 @@ DOCUMENTATION = '''
 module: lvm_gensym
 short_description: Generate default names for lvm variables
 version_added: "2.4"
-description: 
-    - "Module accepts two input strings consisting of a file system type and 
+description:
+    - "Module accepts two input strings consisting of a file system type and
        a mount point path, and outputs names based on system information"
 options:
     fs_type:
         description:
-            - String describing the desired file system type 
-        required: true 
+            - String describing the desired file system type
+        required: true
     mount:
         description:
-            - String describing the mount point path 
+            - String describing the mount point path
         required: true
-author: 
+author:
     - Tim Flannagan (tflannag@redhat.com)
 '''
 
 EXAMPLES = '''
-- name: Generate names 
+- name: Generate names
   lvm_gensym:
     fs_type: "{{ fs_type }}"
     mount: "{{ mount_point }}"
@@ -43,19 +45,18 @@ EXAMPLES = '''
 RETURN = '''
 vg_name:
     description: The default generated name for an unspecified volume group
-    type: str 
+    type: str
 '''
 
 RETURN = '''
 vg_name:
     description: The default generated name for an unspecified volume group
-    type: str 
+    type: str
 
 lv_name:
-    description: The default generated name for an unspecified logical volume 
+    description: The default generated name for an unspecified logical volume
     type: str
 '''
-
 
 def get_os_name():
     """Search the host file and return the name in the ID column"""
@@ -86,7 +87,6 @@ def get_unique_name_from_base(base_name, used_names):
 
     return base_name
 
-
 def get_vg_name_base(host_name, os_name):
     """Return a base name for a volume group based on the host and os names"""
     if host_name != None and len(host_name) != 0:
@@ -96,8 +96,7 @@ def get_vg_name_base(host_name, os_name):
 
     return vg_default
 
-
-def get_vg_name(host_name, lvm_facts):
+def get_default_vg_name(host_name, lvm_facts):
     """Generate a base volume group name, verify its uniqueness, and return that unique name"""
     used_vg_names = lvm_facts['vgs'].keys()
     os_name = get_os_name()
@@ -119,6 +118,22 @@ def get_lv_name_base(fs_type, mount_point):
 
     return lv_default
 
+def get_existing_vg_name(size, vg_facts):
+    vg_name = ''
+    max_size = 0.0
+    size = float(size.replace('g', ''))
+
+    for key, value in vg_facts.items():
+        vg_name = key
+        free_space = float(value['free_g'])
+
+        if free_space > max_size:
+            max_size = free_space
+
+        if free_space >= size:
+            return vg_name
+
+    return 'Unable to find an existing VG with %s size. Max size available: %.2fg in %s' % (size, max_size, vg_name)
 
 def get_lv_name(fs_type, mount_point, lvm_facts):
     """Return a unique logical volume name based on specified file system type, mount point, and system facts"""
@@ -131,13 +146,15 @@ def run_module():
     """Setup and initialize all relevant ansible module data"""
     module_args = dict(
         mount=dict(type='str', required=True),
-        fs_type=dict(type='str', required=True)
+        fs_type=dict(type='str', required=True),
+        size=dict(type='str', required=True),
+        default_mode=dict(type='int', required=True)
     )
 
     result = dict(
         changed=False,
         vg_name='',
-        lv_name=''
+        lv_name='',
     )
 
     module = AnsibleModule(
@@ -149,7 +166,12 @@ def run_module():
     host_name = facts.ansible_facts(module)['nodename'].lower().replace('.', '_').replace('-', '_')
 
     result['lv_name'] = get_lv_name(module.params['fs_type'], module.params['mount'], lvm_facts)
-    result['vg_name'] = get_vg_name(host_name, lvm_facts)
+
+    # Change this logic later; could use xor
+    if len(lvm_facts['vgs'].items()) is 0 or (not module.params['default_mode']):
+        result['vg_name'] = get_default_vg_name(host_name, lvm_facts)
+    else:
+        result['vg_name'] = get_existing_vg_name(module.params['size'], lvm_facts['vgs'])
 
     if result['lv_name'] != '' and result['vg_name'] != '':
         module.exit_json(**result)

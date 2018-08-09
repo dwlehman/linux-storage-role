@@ -25,3 +25,4 @@ mount_device_identifier: "uuid"  # uuid|label|path
 
 # lvm
 lvm_vg: ""  # TODO: Select a good default. Hostname?
+use_existing_vg: 0
