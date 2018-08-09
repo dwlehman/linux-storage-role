@@ -23,6 +23,22 @@
     var: disk_paths
 
 #
+# Setup lvm variable names when undefined
+#
+- name: Generate device name
+  lvm_gensym:
+    mount: "{{ mount_point }}"
+    fs_type: "{{ fs_type }}"
+  when: device_type== "lvm" and device_name == ""
+  register: gensym_results
+
+- set_fact:
+    device_name: "{{ gensym_results.lv_name }}"
+  when: device_type == "lvm" and device_name == ""
+
+- debug: var=device_name
+
+#
 # Set the path for the final device based on device type.
 #
 - set_fact:
@@ -34,7 +50,6 @@
   when: device_type == "lvm"
 
 - debug: var=device_path
-
 
 - name: Remove the Specified Storage Volume
   include_tasks: "{{ layer }}-{{ storage_backend }}.yml"
