@@ -4,8 +4,6 @@
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils import facts
 
-import subprocess
-
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
     'status': ['preview'],
@@ -29,6 +27,16 @@ options:
         description:
             - String describing the mount point path
         required: true
+
+    size:
+        description:
+            - String describing the desired size of an LV
+        required: true
+
+    find_vg:
+        description:
+            - A boolean value describing whether to find an existing VG or not
+        required: true
 author:
     - Tim Flannagan (tflannag@redhat.com)
 '''
@@ -38,14 +46,10 @@ EXAMPLES = '''
   lvm_gensym:
     fs_type: "{{ fs_type }}"
     mount: "{{ mount_point }}"
+    size: "{{ size }}"
+    find_vg: "{{ use_existing_vg }}"
   register: lvm_results
-  when: lvm_vg == "" and mount_point != "" and fs_type != ""
-'''
-
-RETURN = '''
-vg_name:
-    description: The default generated name for an unspecified volume group
-    type: str
+  when: lvm_vg == "" and mount_point != ""
 '''
 
 RETURN = '''
@@ -78,6 +82,7 @@ def name_is_unique(name, used_names):
 def get_unique_name_from_base(base_name, used_names):
     """Generate a unique name given a base name and a list of used names, and return that unique name"""
     counter = 0
+
     while not name_is_unique(base_name, used_names):
         if counter == 0:
             base_name = base_name + '_' + str(counter)
@@ -89,7 +94,7 @@ def get_unique_name_from_base(base_name, used_names):
 
 def get_vg_name_base(host_name, os_name):
     """Return a base name for a volume group based on the host and os names"""
-    if host_name != None and len(host_name) != 0:
+    if host_name is not None and host_name:
         vg_default = os_name + '_' + host_name
     else:
         vg_default = os_name
@@ -119,8 +124,11 @@ def get_lv_name_base(fs_type, mount_point):
     return lv_default
 
 def get_existing_vg_name(size, vg_facts):
+    '''Check if the volume groups found in the system can accomodate the size parameter'''
     vg_name = ''
     max_size = 0.0
+
+    # change this when better size handling is implemented
     size = float(size.replace('g', ''))
 
     for key, value in vg_facts.items():
@@ -133,7 +141,8 @@ def get_existing_vg_name(size, vg_facts):
         if free_space >= size:
             return vg_name
 
-    return 'Unable to find an existing VG with %s size. Max size available: %.2fg in %s' % (size, max_size, vg_name)
+    # change this for a better alternative at some point
+    return 'Unable to find an existing VG with %s size. Max size available is %.1fg in %s' % (size, max_size, vg_name)
 
 def get_lv_name(fs_type, mount_point, lvm_facts):
     """Return a unique logical volume name based on specified file system type, mount point, and system facts"""
@@ -148,13 +157,13 @@ def run_module():
         mount=dict(type='str', required=True),
         fs_type=dict(type='str', required=True),
         size=dict(type='str', required=True),
-        default_mode=dict(type='int', required=True)
+        find_vg=dict(type='int', required=True)
     )
 
     result = dict(
         changed=False,
         vg_name='',
-        lv_name='',
+        lv_name=''
     )
 
     module = AnsibleModule(
@@ -167,13 +176,14 @@ def run_module():
 
     result['lv_name'] = get_lv_name(module.params['fs_type'], module.params['mount'], lvm_facts)
 
-    # Change this logic later; could use xor
-    if len(lvm_facts['vgs'].items()) is 0 or (not module.params['default_mode']):
-        result['vg_name'] = get_default_vg_name(host_name, lvm_facts)
-    else:
+    if lvm_facts['vgs'].items() and module.params['find_vg']:
         result['vg_name'] = get_existing_vg_name(module.params['size'], lvm_facts['vgs'])
+    else:
+        result['vg_name'] = get_default_vg_name(host_name, lvm_facts)
 
-    if result['lv_name'] != '' and result['vg_name'] != '':
+    if 'Unable' in result['vg_name']:
+        module.fail_json(msg="Error reason: {}".format(result['vg_name']))
+    elif result['lv_name'] != '' and result['vg_name'] != '':
         module.exit_json(**result)
     else:
         module.fail_json(msg="Unable to initialize both group and volume names")

@@ -7,30 +7,31 @@
 #
 # Resolve specified disks to device node paths.
 #
-# - name: Resolve disks
-#   resolve_blockdev:
-#     spec: "{{ item }}"
-#   with_items: "{{ disks }}"
-#   register: resolved_disks
-#
-# - debug: var=resolved_disks
-#
-# - set_fact:
-#     disk_paths: "{{ resolved_disks.results|map(attribute='device')|list }}"
-#
-# - name: Show disks
-#   debug:
-#     var: disk_paths
+
+- name: Resolve disks
+  resolve_blockdev:
+    spec: "{{ item }}"
+  with_items: "{{ disks }}"
+  register: resolved_disks
+
+- debug: var=resolved_disks
+
+- set_fact:
+    disk_paths: "{{ resolved_disks.results|map(attribute='device')|list }}"
+
+- name: Show disks
+  debug:
+    var: disk_paths
 
 #
 # Setup lvm variable names when undefined
 #
-- name: Generate device name
+- name: Generate LVM variable names as needed
   lvm_gensym:
     mount: "{{ mount_point }}"
     fs_type: "{{ fs_type }}"
     size: "{{ size }}"
-    default_mode: "{{ use_existing_vg }}"
+    find_vg: "{{ use_existing_vg }}"
   when: device_type== "lvm" and device_name == ""
   register: gensym_results
 
@@ -43,38 +44,38 @@
   when: device_type == "lvm" and lvm_vg == "" and use_existing_vg
 
 - debug: var=gensym_results
-# #
-# # Set the path for the final device based on device type.
-# #
-# - set_fact:
-#     device_path: "{{ disk_paths[0] }}"
-#   when: device_type == "disk"
 #
-# - set_fact:
-#     device_path: "/dev/mapper/{{ lvm_vg }}-{{ device_name }}"
-#   when: device_type == "lvm"
+# Set the path for the final device based on device type.
 #
-# - debug: var=device_path
+- set_fact:
+    device_path: "{{ disk_paths[0] }}"
+  when: device_type == "disk"
+
+- set_fact:
+    device_path: "/dev/mapper/{{ lvm_vg }}-{{ device_name }}"
+  when: device_type == "lvm"
+
+- debug: var=device_path
+
+- name: Remove the Specified Storage Volume
+  include_tasks: "{{ layer }}-{{ storage_backend }}.yml"
+  with_items: "{{ storage_layers[::-1] }}"
+  loop_control:
+    loop_var: layer
+  when: state == "absent"
+
+
+- name: Configure the Specified Storage Volume
+  include_tasks: "{{ layer }}-{{ storage_backend }}.yml"
+  with_items: "{{ storage_layers }}"
+  loop_control:
+    loop_var: layer
+  when: state == "present"
+
 #
-# - name: Remove the Specified Storage Volume
-#   include_tasks: "{{ layer }}-{{ storage_backend }}.yml"
-#   with_items: "{{ storage_layers[::-1] }}"
-#   loop_control:
-#     loop_var: layer
-#   when: state == "absent"
+# Update facts since we may have changed system state.
 #
+# Should this be in a handler instead?
 #
-# - name: Configure the Specified Storage Volume
-#   include_tasks: "{{ layer }}-{{ storage_backend }}.yml"
-#   with_items: "{{ storage_layers }}"
-#   loop_control:
-#     loop_var: layer
-#   when: state == "present"
-#
-# #
-# # Update facts since we may have changed system state.
-# #
-# # Should this be in a handler instead?
-# #
-# - name: Update facts
-#   setup:
+- name: Update facts
+  setup:
