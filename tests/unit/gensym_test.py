@@ -50,8 +50,8 @@ def test_vg_eval(monkeypatch, os_name):
     vg_names = [os_name + "_user", os_name + "_user_0", os_name + "_user_1"]
     _lvm_facts = dict(vgs=dict.fromkeys(vg_names), lvs=dict())
     monkeypatch.setattr(lvm_gensym, "get_os_name", get_os_name)
-    assert lvm_gensym.get_vg_name('user', _lvm_facts) == os_name + '_user_2'
-    assert lvm_gensym.get_vg_name('', _lvm_facts) == os_name
+    assert lvm_gensym.get_default_vg_name('user', _lvm_facts) == os_name + '_user_2'
+    assert lvm_gensym.get_default_vg_name('', _lvm_facts) == os_name
 
 def test_lv_eval():
     """Test the generated unique logical volume name against the expected name"""

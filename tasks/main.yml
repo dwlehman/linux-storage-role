@@ -32,7 +32,7 @@
     fs_type: "{{ fs_type }}"
     size: "{{ size }}"
     find_vg: "{{ use_existing_vg }}"
-  when: device_type== "lvm" and device_name == ""
+  when: device_type== "lvm"
   register: gensym_results
 
 - set_fact:
@@ -41,7 +41,7 @@
 
 - set_fact:
     lvm_vg: "{{ gensym_results.vg_name }}"
-  when: device_type == "lvm" and lvm_vg == "" and use_existing_vg
+  when: device_type == "lvm" and lvm_vg == ""
 
 - debug: var=gensym_results
 #
