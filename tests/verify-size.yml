@@ -21,3 +21,15 @@
     that: (size | replace('g', '')) in device_size
     msg: "The playbook ran with {{ size }}, but lvs command had {{ device_size }} size."
   when: device_type == "lvm" and not default_size
+
+- name: Check if the free space available in the volume group is 0
+  shell: vgs --no-headings {{ lvm_vg }} -o free
+  become: yes
+  register: vgs_buf
+  when: device_type == "lvm" and default_size
+
+- name: Verify default size
+  assert:
+    that: (vgs_buf.stdout | replace(" ", ""))  == '0'
+    msg: "The remaining free space in {{ lvm_vg }} is not completely used up."
+  when: device_type == "lvm" and size == "100%FREE"
