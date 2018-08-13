@@ -58,3 +58,6 @@
 #
 - name: Update facts
   setup:
+
+- name: Verify previous role run results
+  include_tasks: "tests/verify-main.yml"

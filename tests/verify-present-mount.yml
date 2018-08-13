@@ -1,0 +1,46 @@
+---
+#
+# Verify that device is present in the /etc/fstab file
+#
+- name: Read /etc/fstab file
+  shell: cat /etc/fstab
+  register: fstab_buf
+
+- set_fact:
+    device_full_path: "/dev/mapper/{{ lvm_vg }}-{{ device_name }}"
+  when: device_type == "lvm"
+
+- set_fact:
+    device_full_path: "/dev/{{ disks[0] }}"
+  when: device_type == "disk"
+
+- name: Verify that device is present in /etc/fstab file
+  assert:
+    that: fstab_buf.stdout.find(device_full_path) != -1
+    msg: "{{ device_full_path }} is not present in /etc/fstab"
+
+#
+# Verify that the device has the correct mount location
+#
+- name: Run lsblk command to get mountpoint of device
+  shell: lsblk -fn {{ device_full_path }} -o fstype,mountpoint
+  register: lsblk_buf
+
+- set_fact:
+    lsblk_list: "{{ lsblk_buf.stdout.split(' ') | unique }}"
+
+- set_fact:
+    lsblk_fs_type: "{{ lsblk_list[0] }}"
+
+- set_fact:
+    lsblk_mount: "{{ lsblk_list[2] }}"
+
+- name: Verify the device has the same fs-type as lsblk buffer
+  assert:
+    that: lsblk_fs_type == fs_type
+    msg: "lsblk has the fs-type {{ lsblk_fs_type }}, but the playbook ran with {{ fs_type }} fs-type."
+
+- name: Verify the device has the same mountpoint as lsblk buffer
+  assert:
+    that: lsblk_mount == mount_point
+    msg: "lsblk has the mount {{ lsblk_mount }}, but the playbook ran with {{ mount_point }} mount."

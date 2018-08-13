@@ -1,0 +1,9 @@
+---
+
+- name: Verify the mountpoint of present device
+  include_tasks: "verify-present-mount.yml"
+  when: state == "present"
+
+- name: Verify the mountpoint of absent device
+  include_tasks: "verify-absent-mount.yml"
+  when: state == "absent"

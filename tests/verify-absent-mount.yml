@@ -1,0 +1,17 @@
+---
+- name: Read /etc/fstab file
+  shell: cat /etc/fstab
+  register: fstab_buf
+
+- set_fact:
+    device_full_path: "/dev/mapper/{{ lvm_vg }}-{{ device_name }}"
+  when: device_type == "lvm"
+
+- set_fact:
+    device_full_path: "/dev/{{ disks[0] }}"
+  when: device_type == "disk"
+
+- name: Verify that device is not present in fstab file
+  assert:
+    that: fstab_buf.stdout.find(device_full_path) == -1
+    msg: "{{ device_full_path }} is present in /etc/fstab when run in absent state"
