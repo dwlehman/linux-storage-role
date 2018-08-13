@@ -6,24 +6,16 @@
   shell: cat /etc/fstab
   register: fstab_buf
 
-- set_fact:
-    device_full_path: "/dev/mapper/{{ lvm_vg }}-{{ device_name }}"
-  when: device_type == "lvm"
-
-- set_fact:
-    device_full_path: "/dev/{{ disks[0] }}"
-  when: device_type == "disk"
-
 - name: Verify that device is present in /etc/fstab file
   assert:
-    that: fstab_buf.stdout.find(device_full_path) != -1
-    msg: "{{ device_full_path }} is not present in /etc/fstab"
+    that: fstab_buf.stdout.find(device_path) != -1
+    msg: "{{ device_path }} is not present in /etc/fstab"
 
 #
 # Verify that the device has the correct mount location
 #
 - name: Run lsblk command to get mountpoint of device
-  shell: lsblk -fn {{ device_full_path }} -o fstype,mountpoint
+  shell: lsblk -fn {{ device_path }} -o fstype,mountpoint
   register: lsblk_buf
 
 - set_fact:

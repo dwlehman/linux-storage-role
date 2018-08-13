@@ -1,6 +1,6 @@
 ---
 - name: Read 'lvs' command buffer
-  shell: lvs {{ device_full_path }} --no-headings -o size
+  shell: lvs {{ device_path }} --no-headings -o size
   become: yes
   register: lvs_buf
 
