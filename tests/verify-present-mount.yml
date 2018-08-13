@@ -32,6 +32,7 @@
 - set_fact:
     lsblk_fs_type: "{{ lsblk_list[0] }}"
 
+# To-Do: remove empty string from lsblk_list at index 1
 - set_fact:
     lsblk_mount: "{{ lsblk_list[2] }}"
 

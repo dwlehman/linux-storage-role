@@ -8,6 +8,6 @@
   include_tasks: "verify-absent-mount.yml"
   when: state == "absent"
 
-- name: Verify the size of present device
+- name: Verify the size of present lvm device
   include_tasks: "verify-size.yml"
-  when: state == "present"
+  when: state == "present" and device_type == "lvm"
