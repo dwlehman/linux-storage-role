@@ -1,0 +1,23 @@
+---
+- name: Read 'lvs' command buffer
+  shell: lvs {{ device_full_path }} --no-headings -o size
+  become: yes
+  register: lvs_buf
+  when: device_type == "lvm"
+
+- set_fact:
+    device_size: "{{ lvs_buf.stdout | replace(' ', '') | replace ('g', '') }}"
+
+- set_fact:
+    default_size: true
+  when: size is search("%")
+
+- set_fact:
+    default_size: false
+  when: size is not search("%")
+
+- name: Verify specified size
+  assert:
+    that: (size | replace('g', '')) in device_size
+    msg: "The playbook ran with {{ size }}, but lvs command had {{ device_size }} size."
+  when: device_type == "lvm" and not default_size
