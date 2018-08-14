@@ -14,26 +14,21 @@
 #
 # Verify that the device has the correct mount location
 #
-- name: Run lsblk command to get mountpoint of device
-  shell: lsblk -fn {{ device_path }} -o fstype,mountpoint
-  register: lsblk_buf
+- name: Get device block from ansible_mounts
+  set_fact:
+    mount_info: "{{ ansible_mounts|selectattr('device', 'equalto', device_path)|list|first }}"
 
-- set_fact:
-    lsblk_list: "{{ lsblk_buf.stdout.split(' ') | unique }}"
-
-- set_fact:
-    lsblk_fs_type: "{{ lsblk_list[0] }}"
-
-# To-Do: remove empty string from lsblk_list at index 1
-- set_fact:
-    lsblk_mount: "{{ lsblk_list[2] }}"
-
-- name: Verify the device has the same fs-type as lsblk buffer
+- name: Ensure that the device mount is correct
   assert:
-    that: lsblk_fs_type == fs_type
-    msg: "lsblk has the fs-type {{ lsblk_fs_type }}, but the playbook ran with {{ fs_type }} fs-type."
+    that: mount_info.mount == mount_point
+    msg: "The playbook mountpoint {{ mount_point }} did not match the ansible mountpoint {{ mount_info.mount }}"
+  when: mount_info is defined
 
-- name: Verify the device has the same mountpoint as lsblk buffer
+#
+# Verify that the device has the correct fs-type
+#
+- name: Ensure the device fs-type is correct
   assert:
-    that: lsblk_mount == mount_point
-    msg: "lsblk has the mount {{ lsblk_mount }}, but the playbook ran with {{ mount_point }} mount."
+    that: mount_info.fstype == fs_type
+    msg: "The playbook fs-type {{ fs_type}} does not match the ansible fs-type {{ mount_info.fstype }}"
+  when: mount_info is defined
