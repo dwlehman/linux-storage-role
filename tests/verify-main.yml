@@ -1,4 +1,7 @@
 ---
+- name: Initialize default variables for verification
+  include_tasks: "verify-init.yml"
+
 - name: Verify the mountpoint of present device
   include_tasks: "verify-mount.yml"
 

@@ -8,6 +8,7 @@
 - set_fact:
     modified_size: "{{ parsed_size.lvm|replace('g' ,'') }}"
 
+  # This is problematic when size == '1 G'
 - name: Verify specified size
   assert:
     that: (lv_info.size_g|float) == (modified_size|float)

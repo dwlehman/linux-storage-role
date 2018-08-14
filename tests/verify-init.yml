@@ -1,0 +1,30 @@
+---
+- set_fact:
+    device_type: 'lvm'
+  when: device_type is not defined
+
+- set_fact:
+    fs_type: 'xfs'
+  when: fs_type is not defined
+
+- set_fact:
+    device_path: "/dev/mapper/{{ lvm_vg }}-{{ device_name }}"
+  when: device_type == "lvm" and lvm_vg and device_name
+
+- set_fact:
+    device_path: "/dev/disk[0]"
+  when: device_type == "disk" and disks
+
+- set_fact:
+    state: 'present'
+  when: state is not defined
+
+- set_fact:
+    size: '100%FREE'
+  when: size is not defined
+
+- name: Get bsize size results
+  bsize:
+    size: "{{ size }}"
+  register: parsed_size
+  when: size is defined
