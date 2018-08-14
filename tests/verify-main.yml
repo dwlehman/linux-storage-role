@@ -1,11 +1,6 @@
 ---
 - name: Verify the mountpoint of present device
-  include_tasks: "verify-present-mount.yml"
-  when: state == "present"
-
-- name: Verify the mountpoint of absent device
-  include_tasks: "verify-absent-mount.yml"
-  when: state == "absent"
+  include_tasks: "verify-mount.yml"
 
 - name: Verify the size of present lvm device
   include_tasks: "verify-lvm-size.yml"

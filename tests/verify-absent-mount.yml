@@ -1,9 +1,0 @@
----
-- name: Read /etc/fstab file
-  shell: cat /etc/fstab
-  register: fstab_buf
-
-- name: Verify that device is not present in fstab file
-  assert:
-    that: fstab_buf.stdout.find(device_path) == -1
-    msg: "{{ device_path }} is present in /etc/fstab when run in absent state"

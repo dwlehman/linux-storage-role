@@ -35,6 +35,15 @@
 
 - debug: var=device_path
 
+#
+# Call bsize to get usable size
+#
+- name: Get size formats
+  bsize:
+    size: "{{ size }}"
+  register: parsed_size
+  when: device_type == "lvm"
+
 
 - name: Remove the Specified Storage Volume
   include_tasks: "{{ layer }}-{{ storage_backend }}.yml"
@@ -58,6 +67,3 @@
 #
 - name: Update facts
   setup:
-
-- name: Verify previous role run results
-  include_tasks: "tests/verify-main.yml"

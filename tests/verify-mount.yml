@@ -1,6 +1,6 @@
 ---
 #
-# Verify that device is present in the /etc/fstab file
+# Verify the device state in /etc/fstab file
 #
 - name: Read /etc/fstab file
   shell: cat /etc/fstab
@@ -10,6 +10,13 @@
   assert:
     that: fstab_buf.stdout.find(device_path) != -1
     msg: "{{ device_path }} is not present in /etc/fstab"
+  when: state == "present"
+
+- name: Verify that device is absent in fstab file
+  assert:
+    that: fstab_buf.stdout.find(device_path) == -1
+    msg: "{{ device_path }} is present in /etc/fstab when run in absent state"
+  when: state == "absent"
 
 #
 # Verify that the device has the correct mount location
@@ -17,18 +24,19 @@
 - name: Get device block from ansible_mounts
   set_fact:
     mount_info: "{{ ansible_mounts|selectattr('device', 'equalto', device_path)|list|first }}"
+  when: state == "present"
 
-- name: Ensure that the device mount is correct
+- name: Verify that the device mount is correct
   assert:
     that: mount_info.mount == mount_point
     msg: "The playbook mountpoint {{ mount_point }} did not match the ansible mountpoint {{ mount_info.mount }}"
-  when: mount_info is defined
+  when: state == "present"
 
 #
 # Verify that the device has the correct fs-type
 #
-- name: Ensure the device fs-type is correct
+- name: Verify the device fs-type is correct
   assert:
     that: mount_info.fstype == fs_type
     msg: "The playbook fs-type {{ fs_type}} does not match the ansible fs-type {{ mount_info.fstype }}"
-  when: mount_info is defined
+  when: state == "present"

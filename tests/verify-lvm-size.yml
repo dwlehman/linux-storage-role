@@ -1,34 +1,21 @@
 ---
-- name: Read 'lvs' command buffer
-  shell: lvs {{ device_path }} --no-headings -o size
-  become: yes
-  register: lvs_buf
+- set_fact:
+    lv_info: "{{ ansible_facts.lvm.lvs[device_name] }}"
 
 - set_fact:
-    device_size: "{{ lvs_buf.stdout | replace(' ', '') | replace ('g', '') }}"
+    vg_info: "{{ ansible_facts.lvm.vgs[lvm_vg] }}"
 
 - set_fact:
-    default_size: true
-  when: size is search("%")
-
-- set_fact:
-    default_size: false
-  when: size is not search("%")
+    modified_size: "{{ parsed_size.lvm|replace('g' ,'') }}"
 
 - name: Verify specified size
   assert:
-    that: (size | replace('g', '')) in device_size
-    msg: "The playbook ran with {{ size }}, but lvs command had {{ device_size }} size."
-  when: not default_size
-
-- name: Check if the free space available in the volume group is 0
-  shell: vgs --no-headings {{ lvm_vg }} -o free
-  become: yes
-  register: vgs_buf
-  when: default_size
+    that: (lv_info.size_g|float) == (modified_size|float)
+    msg: "The playbook ran with {{ modified_size|float }}, but ansible lvs info returned {{ lv_info.size_g|float}}"
+  when: size is not search("%")
 
 - name: Verify default size
   assert:
-    that: (vgs_buf.stdout | replace(" ", ""))  == '0'
+    that: vg_info.free_g == "0"
     msg: "The remaining free space in {{ lvm_vg }} is not completely used up."
   when: size == "100%FREE"
