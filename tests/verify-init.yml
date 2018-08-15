@@ -23,6 +23,10 @@
     size: '100%FREE'
   when: size is not defined
 
+- set_fact:
+    fs_label: ""
+  when: fs_label is not defined
+
 - name: Get bsize size results
   bsize:
     size: "{{ size }}"

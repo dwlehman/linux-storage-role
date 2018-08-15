@@ -8,11 +8,11 @@
 - set_fact:
     modified_size: "{{ parsed_size.lvm|replace('g' ,'') }}"
 
-  # This is problematic when size == '1 G'
+  # This is problematic when size == '1 G' as modified_size.lvm == 953m
 - name: Verify specified size
   assert:
     that: (lv_info.size_g|float) == (modified_size|float)
-    msg: "The playbook ran with {{ modified_size|float }}, but ansible lvs info returned {{ lv_info.size_g|float}}"
+    msg: "The playbook ran with {{ modified_size|float }}, but ansible lvs info returned {{ lv_info.size_g|float }}"
   when: size is not search("%")
 
 - name: Verify default size

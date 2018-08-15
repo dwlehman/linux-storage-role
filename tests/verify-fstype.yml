@@ -1,0 +1,21 @@
+---
+- block:
+  - name: Get lsblk command buffer for {{ device_path }}
+    command: lsblk {{ device_path }} -no fstype,label
+    register: lsblk_buf
+  rescue:
+  - fail:
+      msg: "lsblk command failed. Check that the supplied variables match the previously run role variables."
+
+- set_fact:
+    lsblk_list: "{{ lsblk_buf.stdout.split(' ')|unique }}"
+
+- name: Verify fs_type against lsblk fstype
+  assert:
+    that: lsblk_list[0] == fs_type
+    msg: "The playbook ran with '{{ fs_type }}' fs-type, but lsblk has '{{ lsblk_list[0] }}' fs-type"
+
+- name: Verify fs_label against lsblk label
+  assert:
+    that: lsblk_list[1] == fs_label
+    msg: "The playbook ran with '{{ fs_label }}' label, but lsblk has '{{ lsblk_list[1] }}' label."

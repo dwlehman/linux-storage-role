@@ -3,7 +3,7 @@
 # Verify the device state in /etc/fstab file
 #
 - name: Read /etc/fstab file
-  shell: cat /etc/fstab
+  command: cat /etc/fstab
   register: fstab_buf
 
 - name: Verify that device is present in /etc/fstab file
@@ -38,5 +38,5 @@
 - name: Verify the device fs-type is correct
   assert:
     that: mount_info.fstype == fs_type
-    msg: "The playbook fs-type {{ fs_type}} does not match the ansible fs-type {{ mount_info.fstype }}"
+    msg: "The playbook fs-type {{ fs_type }} does not match the ansible fs-type {{ mount_info.fstype }}"
   when: state == "present"
