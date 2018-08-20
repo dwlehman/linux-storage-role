@@ -11,7 +11,7 @@ description:
         - 2. If there is a partition table on the disk, it contains no partitions.
         - 3. The disk has no holders to eliminate the possibility of it being a multipath or dmraid member device.
         - 4. Device can be opened with exclusive access to make sure no other software is using it.
-    - If no disks meet all criteria, "Unable to find unused disk" will be returned.
+    - If no disks meet all criteria, there are no unused disk(s) and module will fail.
     - Number of returned disks defaults to first 10, but can be specified with 'max_return' argument.
 author: Eda Zhou (@edamamez)
 options:
@@ -22,11 +22,12 @@ options:
 '''
 
 EXAMPLES = '''
-- name: test finding first unused device module
+- name: test finding first 5 unused disk module
   hosts: localhost
   tasks:
     - name: run module
       find_unused_disk:
+        max_return: 5
       register: testout
     - name: dump test output
       debug:
@@ -37,19 +38,8 @@ RETURN = '''
 disk_name:
     description: Information about unused disks
     returned: On success
-    type: complex
-    contains:
-        disks:
-            description: Unused disk(s) that have been found
-            returned: On success
-            type: list
-            samples: ["sda1", "dm-0", "dm-3"]
-                     ["sda"]
-        none:
-            description: No unused disks were found
-            returned: On success
-            type: string
-            sample: "Unable to find unused disk"
+    type: list
+    sample: ["sda1", "dm-0", "dm-3"]
 '''
 
 
@@ -108,7 +98,7 @@ def run_module():
                 break
 
     if not result['disks']:
-        result['disks'] = "Unable to find unused disk"
+        module.fail_json(msg='Unable to find unused disk', **result)
     module.exit_json(**result)
 
 
