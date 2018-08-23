@@ -1,0 +1,39 @@
+---
+
+# TODO: Argument validation.
+#
+# TODO: Set defaults as needed: lvm_vg, device_name, disks
+#
+
+- debug:
+    var: volume
+
+- debug:
+    var: pool.name
+
+- name: Remove the Specified Volume
+  #include_tasks: "{{ layer }}-{{ storage_backend }}.yml"
+  debug:
+    var: layer
+  loop: "{{ volume_layers[::-1] }}"
+  loop_control:
+    loop_var: layer
+  when: state == "absent"
+
+- name: Configure the Specified Volume
+  #include_tasks: "{{ layer }}-{{ storage_backend }}.yml"
+  debug:
+    var: layer
+  loop: "{{ volume_layers }}"
+  loop_control:
+    loop_var: layer
+  when: state == "present"
+
+#
+# Update facts since we may have changed system state.
+#
+# Should this be in a handler instead?
+#
+- name: Update facts
+  setup:
+  when: not ansible_check_mode

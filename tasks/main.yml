@@ -2,7 +2,7 @@
 
 # TODO: Argument validation.
 #
-# TODO: Set defaults as needed: lvm_vg, device_name, disks
+# TODO: Set defaults as needed: lvm_vg, name, disks
 
 #
 # Validate and process the user-specified size
@@ -11,7 +11,7 @@
   bsize:
     size: "{{ size }}"
   register: parsed_size
-  when: device_type != "disk"
+  when: type != "disk" and size
 
 #
 # Resolve specified disks to device node paths.
@@ -39,30 +39,27 @@
 - name: set final device path for whole disk
   set_fact:
     device_path: "{{ disk_paths[0] }}"
-  when: device_type == "disk"
+  when: type == "disk"
 
 - name: set final device path for lv
   set_fact:
-    device_path: "/dev/mapper/{{ lvm_vg }}-{{ device_name }}"
-  when: device_type == "lvm"
+    device_path: "/dev/mapper/{{ pool_name }}-{{ name }}"
+  when: type == "lvm"
 
 - debug:
     var: device_path
 
-- name: Remove the Specified Storage Volume
-  include_tasks: "{{ layer }}-{{ storage_backend }}.yml"
-  with_items: "{{ storage_layers[::-1] }}"
+- name: manage pools
+  include_tasks: pool.yml
+  loop: "{{ pools }}"
   loop_control:
-    loop_var: layer
-  when: state == "absent"
+    loop_var: pool
 
-
-- name: Configure the Specified Storage Volume
-  include_tasks: "{{ layer }}-{{ storage_backend }}.yml"
-  with_items: "{{ storage_layers }}"
+- name: manage volumes
+  include_tasks: volume.yml
+  loop: "{{ volumes }}"
   loop_control:
-    loop_var: layer
-  when: state == "present"
+    loop_var: volume
 
 #
 # Update facts since we may have changed system state.

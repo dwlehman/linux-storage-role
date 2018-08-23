@@ -12,14 +12,14 @@
   
 - block:
     - name: collect list of current pvs
-      command: pvs -o name --noheadings --select 'vg_name={{ lvm_vg }}'
+      command: pvs -o name --noheadings --select 'vg_name={{ pool_name }}'
       register: pvs_cmd
       changed_when: false
       become: true
   rescue:
     - debug:
         msg: "Failed to run pvs"
-  when: disks == [] and device_type == "lvm" and lvm_vg in ansible_facts.lvm.vgs
+  when: disks == [] and device_type == "lvm" and pool_name in ansible_facts.lvm.vgs
 
 - name: Set pvs based on disk set
   set_fact:
@@ -29,7 +29,7 @@
 - name: Set pvs from current vg
   set_fact:
     pvs: "{{ pvs_cmd.stdout.split() }}"
-  when: disks == [] and device_type == "lvm" and lvm_vg in ansible_facts.lvm.vgs
+  when: disks == [] and device_type == "lvm" and pool_name in ansible_facts.lvm.vgs
 
 #
 # Get list of LVs.
@@ -38,7 +38,7 @@
 #
 - block:
     - name: collect list of current lvs
-      command: lvs -o name --noheadings --select 'vg_name={{ lvm_vg }}'
+      command: lvs -o name --noheadings --select 'vg_name={{ pool_name }}'
       register: lvs_cmd
       changed_when: false
       become: true
@@ -62,14 +62,13 @@
 - block:
     - name: configure vg
       lvg:
-        vg: "{{ lvm_vg }}"
+        vg: "{{ pool_name }}"
         pvs: "{{ pvs }}"
-        #pesize: "{{ lvm_extent_size }}"
         state: "{{ state }}"
   rescue:
     - debug:
         msg: "Failed to configure vg"
-  when: device_type == "lvm" and lvm_vg and (state == "present" or remove_vg)
+  when: device_type == "lvm" and pool_name and (state == "present" or remove_vg)
 
 - block:
    - name: wipe pvs

@@ -14,4 +14,4 @@
     label: "gpt"
     state: "{{ state }}"
   when: use_partitions and device_type != 'disk'
-  with_items: "{{ disk_paths }}"
+  loop: "{{ disk_paths }}"
