@@ -5,10 +5,10 @@
 - name: Verify the mountpoint of present device
   include_tasks: "verify-mount.yml"
 
-- name: Verify the size of present lvm device
-  include_tasks: "verify-lvm-size.yml"
-  when: state == "present" and device_type == "lvm"
-
 - name: Verify the fs-type of the present device
   include_tasks: "verify-fstype.yml"
   when: state == "present"
+
+- name: Verify the size of present lvm device
+  include_tasks: "verify-lvm-size.yml"
+  when: state == "present" and device_type == "lvm"

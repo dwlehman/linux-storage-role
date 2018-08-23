@@ -8,21 +8,26 @@
 
 - name: Verify that device is present in /etc/fstab file
   assert:
-    that: fstab_buf.stdout.find(device_path) != -1
+    that: device_path in fstab_buf.stdout
     msg: "{{ device_path }} is not present in /etc/fstab"
   when: state == "present"
 
 - name: Verify that device is absent in fstab file
   assert:
-    that: fstab_buf.stdout.find(device_path) == -1
+    that: device_path not in fstab_buf.stdout
     msg: "{{ device_path }} is present in /etc/fstab when run in absent state"
   when: state == "absent"
 
 #
 # Verify that the device has the correct mount location
 #
-- name: Get device block from ansible_mounts
-  set_fact:
+- name: Verify device is present in ansible_mounts
+  assert:
+    that: ansible_mounts|selectattr('device', 'equalto', device_path)|list|length==1
+    msg: "The device path {{ device_path }} is not present in ansible_mounts"
+  when: state == "present"
+
+- set_fact:
     mount_info: "{{ ansible_mounts|selectattr('device', 'equalto', device_path)|list|first }}"
   when: state == "present"
 
