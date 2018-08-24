@@ -8,8 +8,8 @@
   package:
     name: lvm2
     state: present
-  when: device_type == "lvm"
-  
+  when: type == "lvm"
+
 - block:
     - name: collect list of current pvs
       command: pvs -o name --noheadings --select 'vg_name={{ pool_name }}'
