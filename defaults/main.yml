@@ -11,6 +11,7 @@ disks: []  # use the first unused disk by default, can be /dev/disk/by-*
 
 use_partitions: false
 pool_name: ""  # TODO: Select a good default. Hostname?
+pool_size: null
 
 # file system
 fs_type: "xfs"

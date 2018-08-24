@@ -1,54 +1,5 @@
 ---
 
-# TODO: Argument validation.
-#
-# TODO: Set defaults as needed: lvm_vg, name, disks
-
-#
-# Validate and process the user-specified size
-#
-- name: parse the specified size
-  bsize:
-    size: "{{ size }}"
-  register: parsed_size
-  when: type != "disk" and size
-
-#
-# Resolve specified disks to device node paths.
-#
-- name: Resolve disks
-  resolve_blockdev:
-    spec: "{{ item }}"
-  with_items: "{{ disks }}"
-  register: resolved_disks
-
-- debug:
-    var: resolved_disks
-
-- name: set list of resolved disk paths
-  set_fact:
-    disk_paths: "{{ resolved_disks.results|map(attribute='device')|list }}"
-
-- name: Show disks
-  debug:
-    var: disk_paths
-
-#
-# Set the path for the final device based on device type.
-#
-- name: set final device path for whole disk
-  set_fact:
-    device_path: "{{ disk_paths[0] }}"
-  when: type == "disk"
-
-- name: set final device path for lv
-  set_fact:
-    device_path: "/dev/mapper/{{ pool_name }}-{{ name }}"
-  when: type == "lvm"
-
-- debug:
-    var: device_path
-
 - name: manage pools
   include_tasks: pool.yml
   loop: "{{ pools }}"
@@ -60,12 +11,3 @@
   loop: "{{ volumes }}"
   loop_control:
     loop_var: volume
-
-#
-# Update facts since we may have changed system state.
-#
-# Should this be in a handler instead?
-#
-- name: Update facts
-  setup:
-  when: not ansible_check_mode

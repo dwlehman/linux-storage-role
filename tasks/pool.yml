@@ -7,6 +7,37 @@
 - debug:
     var: pool
 
+#
+# Resolve specified disks to device node paths.
+#
+- name: Resolve disks
+  resolve_blockdev:
+    spec: "{{ item }}"
+  with_items: "{{ pool.disks }}"
+  register: resolved_disks
+
+- debug:
+    var: resolved_disks
+
+- name: set list of resolved disk paths
+  set_fact:
+    pool_disks: "{{ resolved_disks.results|map(attribute='device')|list }}"
+
+- name: Show disks
+  debug:
+    var: pool_disks
+
+#
+# Validate and process the user-specified size
+#
+# There may or may not be a size specified for the pool. If
+# there is not, we look to the policy for pool sizing.
+- name: parse the specified size
+  bsize:
+    size: "{{ pool.size }}"
+  register: pool_size
+  when: type != "disk" and pool.size is defined
+
 - name: manage removal of pool volumes
   include_tasks: volume.yml
   loop: "{{ pool.volumes }}"
