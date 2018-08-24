@@ -19,17 +19,21 @@
     spec: "{{ item }}"
   with_items: "{{ volume.disks }}"
   register: resolved_disks
+  when: volume.disks is defined
 
 - debug:
     var: resolved_disks
+  when: volume.disks is defined
 
 - name: set list of resolved disk paths
   set_fact:
     volume_disks: "{{ resolved_disks.results|map(attribute='device')|list }}"
+  when: volume.disks is defined
 
 - name: Show disks
   debug:
     var: volume_disks
+  when: volume.disks is defined
 
 #
 # Set the path for the final device based on device type.
