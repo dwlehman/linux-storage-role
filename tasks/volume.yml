@@ -42,6 +42,11 @@
     device_path: "{{ disks[0] }}"
   when: volume.type == "disk"
 
+- name: set final device path for partition
+  set_fact:
+    device_path: "{{ disks[0] }}1"
+  when: volume.type == "partition"
+
 - name: set final device path for lv
   set_fact:
     device_path: "/dev/mapper/{{ pool.name }}-{{ volume.name }}"

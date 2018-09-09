@@ -24,7 +24,12 @@
 - name: Set pvs based on disk set
   set_fact:
     pvs: "{{ disks }}"
-  when: pool.type == "lvm"
+  when: pool.type == "lvm" and not use_partitions
+
+- name: Set pvs based on partitions
+  set_fact:
+    pvs: "{{ disks|map('regex_replace', '$', '1')|list }}"
+  when: pool.type == "lvm" and use_partitions
 
 - name: Set pvs from current vg
   set_fact:
@@ -47,7 +52,7 @@
 
 - block:
    - name: wipe pvs
-     command: pvremove {{ pv_path }}
+     command: wipefs -a {{ pv_path }}
      changed_when: false
      with_items: "{{ pvs }}"
      loop_control:
@@ -55,4 +60,4 @@
   rescue:
     - debug:
         msg: "Failed to wipe pv signatures."
-  when: pool.state == "absent"
+  when: pool.type == 'lvm' and pool.state == "absent"
