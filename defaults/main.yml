@@ -14,7 +14,7 @@ pool_defaults:
 volume_defaults:
   state: "present"
   type: lvm
-  size: null
+  size: 0
 
   fs_type: "xfs"
   fs_label: ""
