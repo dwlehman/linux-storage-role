@@ -1,0 +1,17 @@
+---
+
+# TODO: Figure out how to get the name of the new partition.
+# TODO: Figure out how to determine partition disk(s) and size(s).
+#
+# state
+#   present when
+#     volume.type == 'partition'
+#     use_partitions and volume.type != 'disk'
+- name: Create partition if needed
+  parted:
+    device: "{{ disk }}"
+    label: "{{ disklabel_type }}"
+    number: 1
+    name: "{{ volume.name if volume is defined else pool.name }}"
+    state: "{{ 'present' if (volume is defined and volume.type == 'partition') or (use_partitions and volume is defined and volume.type != 'disk') else 'absent' }}"
+  when: (use_partitions and pool.type is defined and pool.type != 'disk') or (volume is defined and volume.type == 'partition')
