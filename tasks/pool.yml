@@ -50,6 +50,16 @@
     loop_var: raw_volume
   when: pool.state == "absent"
 
+#
+# Manage pool member partitions
+#
+- name: manage pool member partitions
+  include_tasks: "partition-{{ storage_backend }}.yml"
+  loop: "{{ disks }}"
+  loop_control:
+    loop_var: disk
+  when: use_partitions
+
 - name: Manage the Specified Pool
   include_tasks: "{{ layer }}-{{ storage_backend }}.yml"
   loop: "{{ pool_layers if pool.state == 'present' else pool_layers[::-1] }}"
