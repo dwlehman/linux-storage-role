@@ -9,22 +9,13 @@
 #     use_partitions and volume.type != 'disk'
 - name: manage partition as needed
   parted:
-    device: "{{ disk }}"
+    device: "{{ volume.disks[0] if volume is defined and volume.type|default == 'partition' else disk }}"
     label: "{{ disklabel_type }}"
     number: 1
     name: "{{ volume.name|default if volume is defined else pool.name|default }}"
-    state: "{{ 'present' if (volume is defined and volume.type|default('none') == 'partition') or (use_partitions and pool is defined and pool.type|default('none') != 'disk') else 'absent' }}"
-  when: disk is defined and ((use_partitions and pool is defined and pool.type is defined and pool.type != 'disk') or (volume is defined and volume.type is defined and volume.type == 'partition'))
-
-- name: gather partition info
-  parted:
-    device: "{{ disk }}"
-    unit: B
-    state: "info"
-  register: "partitions_{{ disk|basename }}"
-  when: disk is defined
+    state: "{{ volume.state if (volume is defined and volume.type|default == 'partition') else pool.state if (use_partitions and pool is defined and pool.type|default('none') != 'disk') }}"
+  register: part_info
+  when: (disk is defined and use_partitions) or (volume is defined and volume.type is defined and volume.type == 'partition')
 
 - debug:
-    var: "partitions_{{ disk|basename }}"
-  when: disk is defined
-
+    var: part_info

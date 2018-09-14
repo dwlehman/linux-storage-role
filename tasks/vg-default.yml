@@ -19,22 +19,22 @@
   rescue:
     - debug:
         msg: "Failed to run pvs"
-  when: disks == [] and pool.type == "lvm" and pool.name in ansible_facts.lvm.vgs
+  when: pool.disks == [] and pool.type == "lvm" and pool.name in ansible_facts.lvm.vgs
 
 - name: Set pvs based on disk set
   set_fact:
-    pvs: "{{ disks }}"
+    pvs: "{{ pool.disks }}"
   when: pool.type == "lvm" and not use_partitions
 
 - name: Set pvs based on partitions
   set_fact:
-    pvs: "{{ disks|map('regex_replace', '$', '1')|list }}"
+    pvs: "{{ pool.disks|map('regex_replace', '$', '1')|list }}"
   when: pool.type == "lvm" and use_partitions
 
 - name: Set pvs from current vg
   set_fact:
     pvs: "{{ pvs_cmd.stdout.split() }}"
-  when: disks == [] and pool.type == "lvm" and pool.name in ansible_facts.lvm.vgs
+  when: pool.disks == [] and pool.type == "lvm" and pool.name in ansible_facts.lvm.vgs
 
 #
 # Configure the VG

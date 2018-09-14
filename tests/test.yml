@@ -4,10 +4,11 @@
 
   roles:
     - name: storage
+      use_partitions: true
       pools:
         - name: foo
           disks: ['vdb']
-          state: "absent"
+          #state: "absent"
           volumes:
             - name: test1
               size: 10g
@@ -25,7 +26,8 @@
               mount_point: /opt/test3
       volumes:
         - name: sumpin
-          state: "absent"
+          #state: "absent"
           disks: ['vdd']
-          type: disk
+          type: partition
+          fs_type: ext4
           mount_point: /opt/test4
