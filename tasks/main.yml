@@ -1,19 +1,15 @@
 ---
 
-# - name: manage pools
-#   include_tasks: pool-{{ storage_backend }}.yml
-#   loop: "{{ pools }}"
-#   loop_control:
-#     loop_var: raw_pool
-#   when: pools is defined and pools
-#
-# - name: manage volumes
-#   include_tasks: volume-{{ storage_backend }}.yml
-#   loop: "{{ volumes }}"
-#   loop_control:
-#     loop_var: raw_volume
-#   when: volumes is defined and volumes
+- name: manage pools
+  include_tasks: pool-{{ storage_backend }}.yml
+  loop: "{{ pools }}"
+  loop_control:
+    loop_var: raw_pool
+  when: pools is defined and pools
 
-- name: run tests on playbook run
-  include_tasks: "../tests/test-default.yml"
-  when: validate_results
+- name: manage volumes
+  include_tasks: volume-{{ storage_backend }}.yml
+  loop: "{{ volumes }}"
+  loop_control:
+    loop_var: raw_volume
+  when: volumes is defined and volumes

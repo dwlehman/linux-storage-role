@@ -1,0 +1,57 @@
+---
+- name: Configure storage layout
+  hosts: localhost
+  vars:
+      pools:
+        - name: foo
+          disks: ['vdb']
+          # state: "absent"
+          volumes:
+            - name: test1
+              size: 10g
+              mount_point: '/opt/test1'
+        - name: bar
+          disks: ['vdc']
+          #state: "absent"
+          volumes:
+            - name: test2
+              size: 8g
+              mount_point: /opt/test2
+            - name: test3
+              state: absent
+              size: 2g
+              mount_point: /opt/test3
+      volumes:
+        - name: sumpin
+          # state: "absent"
+          disks: ['vdd']
+          type: disk
+          mount_point: /opt/test4
+  roles:
+    - storage
+
+  tasks:
+    - name: Read /etc/fstab file
+      command: cat /etc/fstab
+      changed_when: false
+      register: fstab_out
+
+    - name: Make sure test1 is present in /etc/fstab
+      assert:
+        that: "'/opt/test1' in fstab_out.stdout"
+        msg: "/opt/test1 was not found /etc/fstab"
+
+    - name: Make sure test2 is present in /etc/fstab
+      assert:
+        that: "'/opt/test2' in fstab_out.stdout"
+        msg: "/opt/test2 was not found /etc/fstab"
+
+    - name: Make sure test3 is not present in /etc/fstab
+      assert:
+        that: "'/opt/test3' not in fstab_out.stdout"
+        msg: "/opt/test3 was found /etc/fstab"
+
+    - name: Make sure test4 is present in /etc/fstab
+      assert:
+        that: "'/opt/test4' in fstab_out.stdout"
+        msg: "/opt/test4 was not found /etc/fstab"
