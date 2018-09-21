@@ -45,3 +45,7 @@ pool_internal:
   _orig_members: []
   _remove: false
   _create: false
+
+# testing defaults
+validate_results: false
+tests: ['fs']
