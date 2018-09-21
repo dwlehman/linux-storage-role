@@ -19,17 +19,28 @@
   rescue:
     - debug:
         msg: "Failed to run pvs"
-  when: disks == [] and pool.type == "lvm" and pool.name in ansible_facts.lvm.vgs
+  when: pool.disks == [] and pool.type == "lvm" and pool.name in ansible_facts.lvm.vgs
 
 - name: Set pvs based on disk set
   set_fact:
-    pvs: "{{ disks }}"
-  when: pool.type == "lvm"
+    pvs: "{{ pool.disks }}"
+  when: pool.type == "lvm" and not use_partitions
+
+- block:
+    - name: collect list of current pvs
+      command: pvs -o name --noheadings --select 'vg_name={{ pool.name }}'
+      register: pvs_cmd
+      changed_when: false
+      become: true
+  rescue:
+    - debug:
+        msg: "Failed to run pvs"
+  when: pool.type == "lvm" and pool.name in ansible_facts.lvm.vgs
 
 - name: Set pvs from current vg
   set_fact:
-    pvs: "{{ pvs_cmd.stdout.split() }}"
-  when: disks == [] and pool.type == "lvm" and pool.name in ansible_facts.lvm.vgs
+    pool: "{{ pool|combine({'_orig_member_devices': pvs_cmd.stdout.split()}) }}"
+  when: pool.type == "lvm" and pool.name in ansible_facts.lvm.vgs and not pvs_cmd.failed
 
 #
 # Configure the VG
@@ -55,4 +66,4 @@
   rescue:
     - debug:
         msg: "Failed to wipe pv signatures."
-  when: pool.state == "absent"
+  when: pool.type == 'lvm' and pool.state == "absent"
