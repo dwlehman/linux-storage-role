@@ -1,0 +1,4 @@
+---
+- name: Make sure it gets to here
+  debug:
+    msg: "Hery there"

@@ -42,7 +42,8 @@
     volume: "{{ volume|combine({'_device': volume.disks[0]+'1'}) }}"
   when: volume.type == "partition"
 
-- debug:
+- name: Debug volume state info
+  debug:
     var: volume
 
 - name: set final device path for lv
@@ -89,6 +90,11 @@
     size: "{{ volume.size }}"
   register: size
   when: volume.type != "disk"
+
+- name: Append volume state info to volumes_list
+  set_fact:
+    volumes_list: "{{ volumes_list + [volume] }}"
+    cacheable: true
 
 - name: Manage the Specified Volume
   include_tasks: "{{ layer }}-{{ storage_backend }}.yml"

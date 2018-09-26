@@ -1,0 +1,6 @@
+---
+- name: Run specified tests
+  include_tasks: "test-{{ test }}.yml"
+  loop: "{{ tests }}"
+  loop_control:
+    loop_var: test
