@@ -4,15 +4,14 @@
 #
 # TODO: Decide on semantics. Playbook PV specs should probably be complete to enable idempotency.
 #
-- name: Install LVM2 commmands as needed
-  package:
-    name: lvm2
-    state: present
-  when: "'lvm2' not in installed_packages and pool.type == 'lvm'"
-
-- set_fact:
-    installed_packages: "{{ installed_packages + [lvm2'] }}"
-  when: "'lvm2' not in installed_packages"
+- block:
+  - name: Install LVM2 commands as needed
+    package:
+      name: lvm2
+      state: present
+  - set_fact:
+      installed_packages: "{{ installed_packages + ['lvm2'] }}"
+  when: "'lvm2' not in installed_packages and volume.type == 'lvm'"
 
 - block:
     - name: collect list of current pvs

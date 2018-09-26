@@ -1,14 +1,13 @@
 ---
-- name: Install LVM2 commands as needed
-  package:
-    name: lvm2
-    state: present
+- block:
+  - name: Install LVM2 commands as needed
+    package:
+      name: lvm2
+      state: present
+  - set_fact:
+      installed_packages: "{{ installed_packages + ['lvm2'] }}"
   when: "'lvm2' not in installed_packages and volume.type == 'lvm'"
-
-- set_fact:
-    installed_packages: "{{ installed_packages + ['lvm2'] }}"
-  when: "'lvm2' not in installed_packages"
-
+  
 - name: Make sure LV exists
   lvol:
     lv: "{{ volume.name }}"
