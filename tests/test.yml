@@ -1,20 +1,18 @@
 ---
-- hosts: localhost
-  become: true
-
-  roles:
-    - name: storage
+- name: Configure storage layout
+  hosts: localhost
+  vars:
       pools:
         - name: foo
           disks: ['vdb']
-          state: "absent"
+          # state: "absent"
           volumes:
             - name: test1
               size: 10g
               mount_point: '/opt/test1'
         - name: bar
           disks: ['vdc']
-          #state: "absent"
+          # state: "absent"
           volumes:
             - name: test2
               size: 8g
@@ -25,7 +23,12 @@
               mount_point: /opt/test3
       volumes:
         - name: sumpin
-          state: "absent"
+          # state: "absent"
           disks: ['vdd']
           type: disk
           mount_point: /opt/test4
+  roles:
+    - storage
+
+  tasks:
+    - include_tasks: "test-volumes-exist.yml"
