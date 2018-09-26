@@ -8,8 +8,12 @@
   package:
     name: lvm2
     state: present
-  when: pool.type == "lvm"
-  
+  when: "'lvm2' not in installed_packages and pool.type == 'lvm'"
+
+- set_fact:
+    installed_packages: "{{ installed_packages + [lvm2'] }}"
+  when: "'lvm2' not in installed_packages"
+
 - block:
     - name: collect list of current pvs
       command: pvs -o name --noheadings --select 'vg_name={{ pool.name }}'

@@ -3,7 +3,11 @@
   package:
     name: lvm2
     state: present
-  when: volume.type == "lvm"
+  when: "'lvm2' not in installed_packages and volume.type == 'lvm'"
+
+- set_fact:
+    installed_packages: "{{ installed_packages + ['lvm2'] }}"
+  when: "'lvm2' not in installed_packages"
 
 - name: Make sure LV exists
   lvol:
