@@ -18,7 +18,7 @@
       state: present
   - set_fact:
       installed_packages: "{{ installed_packages + ['e2fsprogs'] }}"
-  when: "'e2fsprogs' not in installed_packages and volume.fs_type in ['ext2', 'ext3', 'ext4']"
+  when: "'e2fsprogs' not in installed_packages and volume.fs_type in ['ext2', 'ext3', 'ext4'] and not ansible_check_mode"
 
 - block:
   - name: Install util-linux for swap file system type
@@ -27,7 +27,7 @@
       state: present
   - set_fact:
       installed_packages: "{{ installed_packages + ['util-linux'] }}"
-  when: "'util-linux' not in installed_packages and (volume.fs_type == 'swap' or volume.state == 'absent' or (pool.state is defined and pool.state == 'absent'))"
+  when: "'util-linux' not in installed_packages and (volume.fs_type == 'swap' or volume.state == 'absent' or (pool.state is defined and pool.state == 'absent')) and not ansible_check_mode"
 
 - name: unmount fs if we're going to reformat
   mount:

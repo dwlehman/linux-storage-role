@@ -6,8 +6,8 @@
       state: present
   - set_fact:
       installed_packages: "{{ installed_packages + ['lvm2'] }}"
-  when: "'lvm2' not in installed_packages and volume.type == 'lvm'"
-  
+  when: "'lvm2' not in installed_packages and volume.type == 'lvm' and not ansible_check_mode"
+
 - name: Make sure LV exists
   lvol:
     lv: "{{ volume.name }}"

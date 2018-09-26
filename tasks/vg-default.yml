@@ -11,7 +11,7 @@
       state: present
   - set_fact:
       installed_packages: "{{ installed_packages + ['lvm2'] }}"
-  when: "'lvm2' not in installed_packages and volume.type == 'lvm'"
+  when: "'lvm2' not in installed_packages and volume.type == 'lvm' and not ansible_check_mode"
 
 - block:
     - name: collect list of current pvs
