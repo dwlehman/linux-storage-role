@@ -1,0 +1,29 @@
+---
+- name: add new RHEL7 repository
+  yum_repository:
+    name: base_repo
+    file: base_repo
+    description: "generic base repo"
+    baseurl: http://mirror.centos.org/$releasever/os/$basearch/
+    gpgcheck: no
+  when:
+    - (ansible_distribution == 'CentOS' or ansible_distribution == 'Enterprise Linux' or ansible_distribution == 'RedHat')
+    - ansible_distribution_major_version == '7'
+
+- name: add new RHEL repository
+  yum_repository:
+    name: base_repo
+    file: base_repo
+    description: "generic base repo"
+    baseurl: http://mirror.centos.org/$releasever/os/$basearch/
+    gpgcheck: no
+  when: (ansible_distribution == 'CentOS' or ansible_distribution == 'Enterprise Linux')
+
+- name: add new Fedora repository
+  yum_repository:
+    name: base_repo
+    file: base_repo
+    description: "generic base repo"
+    baseurl: http://download.fedoraproject.org/pub/fedora/linux/releases/$releasever/Everything/$basearch/os/
+    gpgcheck: no
+  when: ansible_distribution == 'Fedora'

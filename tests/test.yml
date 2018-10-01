@@ -4,6 +4,8 @@
   vars:
     use_partitions: true
 
+  tasks:
+    - include_tasks: '{{playbook_dir}}/../tasks/add_repo.yml'
   roles:
     - name: storage
       pools:
